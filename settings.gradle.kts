@@ -3,6 +3,7 @@ rootProject.name = "spring-saga-kt"
 include(
     "saga-core",
     "saga-storage-jdbc",
+    "saga-events-kafka",
     "saga-spring-boot-starter",
     "examples:order-saga",
 )
@@ -22,6 +23,9 @@ dependencyResolutionManagement {
             version("hikari", "5.1.0")
             version("slf4j", "2.0.16")
             version("micrometer", "1.13.6")
+            version("testcontainers", "1.20.4")
+            version("postgres", "42.7.4")
+            version("springKafka", "3.2.4")
 
             library("kotlinx-coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines")
             library("kotlinx-coroutines-jdk8", "org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8").versionRef("coroutines")
@@ -44,6 +48,13 @@ dependencyResolutionManagement {
             library("kotest-runner", "io.kotest", "kotest-runner-junit5").versionRef("kotest")
             library("kotest-assertions", "io.kotest", "kotest-assertions-core").versionRef("kotest")
             library("kotest-property", "io.kotest", "kotest-property").versionRef("kotest")
+
+            library("testcontainers-junit", "org.testcontainers", "junit-jupiter").versionRef("testcontainers")
+            library("testcontainers-postgres", "org.testcontainers", "postgresql").versionRef("testcontainers")
+            library("testcontainers-kafka", "org.testcontainers", "kafka").versionRef("testcontainers")
+            library("postgres-driver", "org.postgresql", "postgresql").versionRef("postgres")
+            library("spring-kafka", "org.springframework.kafka", "spring-kafka").versionRef("springKafka")
+            library("spring-kafka-test", "org.springframework.kafka", "spring-kafka-test").versionRef("springKafka")
         }
     }
 }

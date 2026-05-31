@@ -259,13 +259,18 @@ This is intentional: silently retrying a failed refund is worse than alerting on
 
 ## Storage backends
 
-| Backend       | Module                      | Status   |
-|---------------|-----------------------------|----------|
-| In-memory     | `saga-core`                 | shipped  |
-| JDBC          | `saga-storage-jdbc`         | shipped  |
-| R2DBC         | `saga-storage-r2dbc`        | planned  |
-| Redis         | `saga-storage-redis`        | planned  |
-| MongoDB       | `saga-storage-mongo`        | planned  |
+| Backend       | Module                      | Tested against        | Status   |
+|---------------|-----------------------------|-----------------------|----------|
+| In-memory     | `saga-core`                 | unit                  | shipped  |
+| JDBC — H2     | `saga-storage-jdbc`         | unit                  | shipped  |
+| JDBC — Postgres | `saga-storage-jdbc`       | testcontainers (CI)   | shipped  |
+| R2DBC         | `saga-storage-r2dbc`        | —                     | planned  |
+| Redis         | `saga-storage-redis`        | —                     | planned  |
+| MongoDB       | `saga-storage-mongo`        | —                     | planned  |
+
+The JDBC backend auto-detects the SQL dialect from `DataSource` metadata and picks
+the matching schema. To override, pass `dialect = SqlDialect.POSTGRESQL` explicitly
+when constructing `JdbcSagaStateRepository`.
 
 Implement `SagaStateRepository` to plug in your own:
 
@@ -277,6 +282,46 @@ interface SagaStateRepository {
     suspend fun findResumable(sagaName: String? = null, limit: Int = 100): List<SagaRecord>
 }
 ```
+
+## Event publishing (Kafka)
+
+Drop in `saga-events-kafka` to publish lifecycle events to a Kafka topic so
+downstream services can react to saga outcomes without polling state:
+
+```kotlin
+dependencies {
+    implementation("com.github.BK202503.bk-spring-saga:saga-spring-boot-starter:main-SNAPSHOT")
+    implementation("com.github.BK202503.bk-spring-saga:saga-events-kafka:main-SNAPSHOT")
+    implementation("org.springframework.kafka:spring-kafka")
+}
+```
+
+```yaml
+saga:
+  events:
+    kafka:
+      enabled: true
+      topic: saga.events
+```
+
+Each saga produces a strictly-ordered stream of events on the same partition (key
+= `sagaId`):
+
+| Event                  | Payload fields                                            |
+|------------------------|-----------------------------------------------------------|
+| `Started`              | sagaId, sagaName, occurredAt                              |
+| `StepCompleted`        | + stepName, attempts                                      |
+| `StepFailed`           | + stepName, errorType, errorMessage                       |
+| `Completed`            | (terminal success)                                        |
+| `Compensated`          | + failedStep, causeType, causeMessage                     |
+| `CompensationFailed`   | + compensationStep, errorType, errorMessage               |
+
+Kafka record headers `event_type` and `saga_name` are set so consumers can filter
+without parsing the body.
+
+If Kafka is temporarily unavailable, the executor logs the publish failure and
+continues — saga progress and the state row are durable independently of the
+broker, so a Kafka outage cannot break the saga itself.
 
 ## Observability
 
@@ -317,6 +362,31 @@ curl -s -X POST localhost:8080/orders -H 'content-type: application/json' \
 # triggers compensation (amount over limit -> payment declined)
 curl -s -X POST localhost:8080/orders -H 'content-type: application/json' \
   -d '{"orderId":"o-2","userId":"u-1","sku":"SKU-A","quantity":1,"amountCents":2000000}'
+```
+
+## Testing
+
+`./gradlew test` runs the unit suites (saga-core, H2 against the JDBC backend,
+the Spring Boot autoconfigure test).
+
+Integration suites that require Docker — PostgreSQL via testcontainers, Kafka
+via testcontainers — skip automatically when no Docker daemon is reachable, so
+local builds stay green. CI sets `SAGA_REQUIRE_DOCKER=1` to make those same
+suites fail loudly instead of skipping, ensuring the contract is exercised on
+every push. See `.github/workflows/ci.yml`.
+
+To run the Docker-backed suites locally:
+
+```bash
+SAGA_REQUIRE_DOCKER=1 ./gradlew :saga-storage-jdbc:test :saga-events-kafka:test
+```
+
+If you are on macOS with Docker Desktop and see "Could not find a valid Docker
+environment", point testcontainers at the right socket by writing a one-line
+`~/.testcontainers.properties`:
+
+```properties
+docker.host=unix:///Users/<you>/.docker/run/docker.sock
 ```
 
 ## Status

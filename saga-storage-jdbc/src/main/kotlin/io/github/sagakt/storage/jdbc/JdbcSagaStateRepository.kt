@@ -29,14 +29,17 @@ class JdbcSagaStateRepository(
     private val dataSource: DataSource,
     private val mapper: ObjectMapper = JacksonCodecRegistry.defaultMapper(),
     private val tableName: String = "saga_state",
+    dialect: SqlDialect? = null,
 ) : SagaStateRepository {
 
+    val dialect: SqlDialect = dialect ?: SqlDialect.detect(dataSource)
+
     fun initializeSchema() {
-        val sql = JdbcSagaStateRepository::class.java
-            .getResource("/io/github/sagakt/storage/jdbc/schema.sql")
+        val resource = "/io/github/sagakt/storage/jdbc/schema/${dialect.schemaResource}"
+        val sql = JdbcSagaStateRepository::class.java.getResource(resource)
             ?.readText()
             ?.let { if (tableName == "saga_state") it else it.replace("saga_state", tableName) }
-            ?: error("schema.sql not found on classpath")
+            ?: error("$resource not found on classpath")
         dataSource.connection.use { conn ->
             conn.createStatement().use { st ->
                 for (stmt in sql.split(";").map { it.trim() }.filter { it.isNotEmpty() }) {

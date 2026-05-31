@@ -8,18 +8,19 @@ plugins {
 
 dependencies {
     api(project(":saga-core"))
-    api(libs.jackson.module.kotlin)
-    api(libs.jackson.datatype.jsr310)
+    api(libs.spring.kafka)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.kotlinx.coroutines.jdk8)
     implementation(libs.slf4j.api)
+    compileOnly(libs.spring.boot.autoconfigure)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.kotest.runner)
     testImplementation(libs.kotest.assertions)
-    testImplementation(libs.h2)
-    testImplementation(libs.hikari)
     testImplementation(libs.testcontainers.junit)
-    testImplementation(libs.testcontainers.postgres)
-    testRuntimeOnly(libs.postgres.driver)
+    testImplementation(libs.testcontainers.kafka)
+    testImplementation(libs.spring.kafka.test)
 }
 
 publishing {
@@ -31,8 +32,6 @@ publishing {
 }
 
 tasks.test {
-    // Help testcontainers find the Docker daemon when /var/run/docker.sock is not
-    // the default (common on macOS with Docker Desktop / colima).
     if (System.getenv("DOCKER_HOST") == null) {
         val candidates = listOf(
             "${System.getProperty("user.home")}/.docker/run/docker.sock",

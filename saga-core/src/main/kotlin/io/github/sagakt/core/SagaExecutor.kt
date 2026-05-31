@@ -19,8 +19,19 @@ class SagaExecutor(
     private val codecRegistry: SagaCodecRegistry,
     private val clock: Clock = Clock.systemUTC(),
     private val metrics: SagaMetrics = SagaMetrics.NoOp,
+    private val eventPublisher: SagaEventPublisher = SagaEventPublisher.NoOp,
 ) {
     private val log = LoggerFactory.getLogger(SagaExecutor::class.java)
+
+    private suspend fun emit(event: SagaEvent) {
+        try {
+            eventPublisher.publish(event)
+        } catch (ce: kotlinx.coroutines.CancellationException) {
+            throw ce
+        } catch (t: Throwable) {
+            log.warn("event publish failed for {} id={}", event.type, event.sagaId, t)
+        }
+    }
 
     suspend fun <Ctx : Any> execute(
         definition: SagaDefinition<Ctx>,
@@ -43,6 +54,7 @@ class SagaExecutor(
         )
         val saved = repository.insert(record)
         metrics.sagaStarted(definition.name)
+        emit(SagaEvent.Started(saved.id, definition.name, now))
         log.info("saga {} started id={}", definition.name, saved.id)
         return runForward(definition, codec, saved, initial)
     }
@@ -108,6 +120,12 @@ class SagaExecutor(
                     )
                     record = repository.update(record)
                     metrics.stepCompleted(definition.name, step.name, outcome.attempts)
+                    emit(
+                        SagaEvent.StepCompleted(
+                            record.id, definition.name, record.updatedAt,
+                            step.name, outcome.attempts,
+                        ),
+                    )
                 }
                 is StepOutcome.Failure -> {
                     record = record.copy(
@@ -118,6 +136,14 @@ class SagaExecutor(
                     )
                     record = repository.update(record)
                     metrics.stepFailed(definition.name, step.name, outcome.cause)
+                    emit(
+                        SagaEvent.StepFailed(
+                            record.id, definition.name, record.updatedAt,
+                            step.name,
+                            outcome.cause::class.qualifiedName ?: outcome.cause::class.java.name,
+                            outcome.cause.message,
+                        ),
+                    )
                     log.warn(
                         "saga {} step {} failed; entering compensation id={}",
                         definition.name, step.name, record.id, outcome.cause,
@@ -133,6 +159,7 @@ class SagaExecutor(
             log.warn("saga {} onComplete callback threw id={}", definition.name, record.id, t)
         }
         metrics.sagaCompleted(definition.name)
+        emit(SagaEvent.Completed(record.id, definition.name, Instant.now(clock)))
         log.info("saga {} completed id={}", definition.name, record.id)
         return SagaResult.Completed(record.id, context)
     }
@@ -168,6 +195,14 @@ class SagaExecutor(
                 record = repository.update(record)
                 metrics.compensationFailed(definition.name, step.name, t)
                 metrics.sagaCompensationFailed(definition.name)
+                emit(
+                    SagaEvent.CompensationFailed(
+                        record.id, definition.name, record.updatedAt,
+                        step.name,
+                        t::class.qualifiedName ?: t::class.java.name,
+                        t.message,
+                    ),
+                )
                 log.error(
                     "saga {} compensation failed for step {} id={}",
                     definition.name, step.name, record.id, t,
@@ -195,6 +230,14 @@ class SagaExecutor(
             log.warn("saga {} onFailure callback threw id={}", definition.name, record.id, t)
         }
         metrics.sagaCompensated(definition.name)
+        emit(
+            SagaEvent.Compensated(
+                record.id, definition.name, Instant.now(clock),
+                failedStep,
+                cause::class.qualifiedName ?: cause::class.java.name,
+                cause.message,
+            ),
+        )
         log.info("saga {} compensated id={}", definition.name, record.id)
         return SagaResult.Compensated(record.id, context, cause, failedStep)
     }

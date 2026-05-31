@@ -6,6 +6,7 @@ import io.github.sagakt.core.MapSagaDefinitionRegistry
 import io.github.sagakt.core.SagaCodecRegistry
 import io.github.sagakt.core.SagaDefinition
 import io.github.sagakt.core.SagaDefinitionRegistry
+import io.github.sagakt.core.SagaEventPublisher
 import io.github.sagakt.core.SagaExecutor
 import io.github.sagakt.core.SagaMetrics
 import io.github.sagakt.core.SagaResumer
@@ -68,12 +69,17 @@ class SagaAutoConfiguration {
         MapSagaDefinitionRegistry(definitions.orderedStream().toList())
 
     @Bean
+    @ConditionalOnMissingBean(SagaEventPublisher::class)
+    fun noopSagaEventPublisher(): SagaEventPublisher = SagaEventPublisher.NoOp
+
+    @Bean
     @ConditionalOnMissingBean
     fun sagaExecutor(
         repository: SagaStateRepository,
         codecRegistry: SagaCodecRegistry,
         metrics: SagaMetrics,
-    ): SagaExecutor = SagaExecutor(repository, codecRegistry, metrics = metrics)
+        eventPublisher: SagaEventPublisher,
+    ): SagaExecutor = SagaExecutor(repository, codecRegistry, metrics = metrics, eventPublisher = eventPublisher)
 
     @Bean
     @ConditionalOnMissingBean
