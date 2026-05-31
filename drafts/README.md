@@ -12,7 +12,7 @@ reproducible.
 | `launch-post-en.md`                 | dev.to / Medium / personal blog (English).               |
 | `launch-post-ko.md`                 | velog / brunch / tistory (한국어).                       |
 | `awesome-kotlin-PR.md`              | KotlinBy/awesome-kotlin PR — entry text + commands.      |
-| `kotlin-weekly-submission.md`       | kotlinweekly.net submit form.                            |
+| `kotlin-weekly-submission.md`       | Email template — submission is by email, not web form.   |
 | `reddit-r-kotlin.md`                | r/Kotlin (and r/SpringBoot cross-post) submission.       |
 | `okky-post.md`                      | OKKY "프로젝트" 게시판.                                  |
 | `geeknews-post.md`                  | news.hada.io "Show GN" 형식.                             |
