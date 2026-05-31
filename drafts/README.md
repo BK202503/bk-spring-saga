@@ -8,6 +8,7 @@ reproducible.
 
 | File                                | Use for                                                  |
 |-------------------------------------|----------------------------------------------------------|
+| `ACTIVITY.md`                       | Chronological log of releases, submissions, upstream PRs.|
 | `RELEASE_NOTES_v0.1.0.md`           | GitHub Releases page body. Paste verbatim.               |
 | `launch-post-en.md`                 | dev.to / Medium / personal blog (English).               |
 | `launch-post-ko.md`                 | velog / brunch / tistory (한국어).                       |
