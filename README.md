@@ -1,5 +1,11 @@
 # spring-saga-kt
 
+[![CI](https://github.com/BK202503/bk-spring-saga/actions/workflows/ci.yml/badge.svg)](https://github.com/BK202503/bk-spring-saga/actions/workflows/ci.yml)
+[![JitPack](https://jitpack.io/v/BK202503/bk-spring-saga.svg)](https://jitpack.io/#BK202503/bk-spring-saga)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+
 A Kotlin-first, coroutine-native Saga orchestrator for Spring Boot.
 
 ```kotlin
