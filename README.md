@@ -52,16 +52,78 @@ smallest thing that does the job.
 
 ## Install
 
-Maven Central (planned):
+### Option A — JitPack (recommended while pre-1.0)
+
+`build.gradle.kts`:
 
 ```kotlin
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+
 dependencies {
-    implementation("io.github.sagakt:saga-spring-boot-starter:0.1.0")
+    implementation("com.github.BK202503.bk-spring-saga:saga-spring-boot-starter:main-SNAPSHOT")
 }
 ```
 
+Or pin to a release tag once published (e.g. `v0.1.0`):
+
+```kotlin
+implementation("com.github.BK202503.bk-spring-saga:saga-spring-boot-starter:v0.1.0")
+```
+
+`main-SNAPSHOT` always tracks the latest `main` — convenient for trying it out, but
+prefer a tag in production so your builds are reproducible. JitPack triggers a build
+the first time anyone requests a new coordinate, so the first download is slower.
+
 The starter pulls in `saga-core` and `saga-storage-jdbc`. If you only need the core
-DSL (e.g., for tests or non-Spring projects), depend on `saga-core` alone.
+DSL (no Spring), depend on `saga-core` alone:
+
+```kotlin
+implementation("com.github.BK202503.bk-spring-saga:saga-core:main-SNAPSHOT")
+```
+
+For Maven (`pom.xml`):
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.BK202503.bk-spring-saga</groupId>
+    <artifactId>saga-spring-boot-starter</artifactId>
+    <version>main-SNAPSHOT</version>
+</dependency>
+```
+
+### Option B — Local install (for hacking on the library itself)
+
+Clone, install to your local Maven repository, then depend on the snapshot
+coordinate:
+
+```bash
+git clone https://github.com/BK202503/bk-spring-saga.git
+cd bk-spring-saga
+./gradlew publishToMavenLocal
+```
+
+```kotlin
+repositories { mavenLocal(); mavenCentral() }
+
+dependencies {
+    implementation("io.github.sagakt:saga-spring-boot-starter:0.1.0-SNAPSHOT")
+}
+```
+
+### Option C — Maven Central (planned)
+
+`io.github.sagakt:saga-spring-boot-starter:0.1.0` will be the coordinate once the
+Sonatype namespace is verified. Tracking issue welcome.
 
 ## Quick start
 
