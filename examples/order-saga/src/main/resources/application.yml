@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:orders;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: false
+
+server:
+  port: 8080
+
+saga:
+  storage: JDBC
+  initialize-schema: true
+  resume-on-startup: true
+  metrics-enabled: true
+
+logging:
+  level:
+    io.github.sagakt: INFO
+    io.github.sagakt.example: INFO
