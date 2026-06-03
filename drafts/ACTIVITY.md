@@ -102,6 +102,26 @@ covered by PR #1702 — moved on.
 where the maintainer is still in "wait and see" mode. Engaged via comment
 rather than burning a first-PR slot on a feature that may not be accepted.
 
+## 2026-06-03 — Email privacy cleanup
+
+DCO bot on #1714 surfaced that every commit on every fork carried the
+personal Gmail in author + `Signed-off-by:`. Rewrote history to use the
+GitHub noreply address (`199436087+BK202503@users.noreply.github.com`)
+across all three remotes:
+
+- `BK202503/bk-spring-saga` — `git filter-branch --env-filter` over all
+  six commits, recreated the annotated `v0.1.0` tag (the tag *object*
+  carries its own `tagger` email, which filter-branch leaves alone),
+  force-pushed `main` with `--force-with-lease` and the tag with `--force`.
+- `BK202503/awesome-kotlin` (PR #1125 branch) — single-commit amend with
+  `--reset-author`, force-pushed.
+- `BK202503/spring-modulith` (PR #1714 branch) — single-commit amend with
+  `--reset-author`, also rewrote the `Signed-off-by:` line in the body
+  via `sed`, force-pushed. DCO bot re-checked → SUCCESS.
+
+GitHub commit search confirmed zero remaining hits for the old address
+across all three repos.
+
 ## Patterns worth keeping for next contributions
 
 - **Before opening a PR, search for in-flight ones**:
