@@ -35,21 +35,23 @@ Replacement email (already in current refs):
 ## Affected commit SHAs
 
 ### 1. spring-projects/spring-modulith  (upstream, referenced via PR #1714)
-- 4647796e6d88692ec5d5a90a0b77763c744d0692
-- 81b19236... (the earlier intermediate; please verify in your tooling)
+- 4647796e6d88692ec5d5a90a0b77763c744d0692  (with the leaked email in Signed-off-by)
+- 81b192366b32fe79c9dea63f480d334f52487d0e  (earlier intermediate)
 
 URL examples that still return HTTP 200:
 - https://github.com/spring-projects/spring-modulith/commit/4647796e6d88692ec5d5a90a0b77763c744d0692
+- https://github.com/spring-projects/spring-modulith/commit/81b192366b32fe79c9dea63f480d334f52487d0e
 - https://github.com/BK202503/spring-modulith/commit/4647796e6d88692ec5d5a90a0b77763c744d0692
+- https://github.com/BK202503/spring-modulith/commit/81b192366b32fe79c9dea63f480d334f52487d0e
 
 ### 2. Heapy/awesome-kotlin  (upstream, referenced via PR #1125)
-- b8c209ad... (the original commit on the PR branch)
+- b8c209ad6e0c8c3ffd50276edb67fec0ea5497a2
 
 URL examples:
-- https://github.com/Heapy/awesome-kotlin/commit/b8c209ad...
-- https://github.com/BK202503/awesome-kotlin/commit/b8c209ad...
+- https://github.com/Heapy/awesome-kotlin/commit/b8c209ad6e0c8c3ffd50276edb67fec0ea5497a2
+- https://github.com/BK202503/awesome-kotlin/commit/b8c209ad6e0c8c3ffd50276edb67fec0ea5497a2
 
-### 3. BK202503/bk-spring-saga  (my own repo — also being deleted+recreated)
+### 3. BK202503/bk-spring-saga  (my own repo)
 - 07ef844f7dfab2a200064554f9bfe4c879e4879b
 - ffb5d8c4c9e33be6c6c7e64dc67a962add5fb4c0
 - bd57035b342d4932abaf3a2fa99b5020a7fe683f
@@ -57,10 +59,10 @@ URL examples:
 - bfea37a255f57b94f84ce12bc0a5a791f1618aa3
 - 2c81284b3e985870f4250695bff2780eb0568cd8
 
-I am separately deleting and recreating BK202503/bk-spring-saga, so those
-SHAs should disappear from my own repository on my end — but please
-confirm whether the deletion also purges the underlying objects or if
-they survive in any internal mirror / cache.
+These six commits were force-pushed away from `main` after I rewrote
+history to use the noreply email; they remain reachable only by direct
+SHA URL (e.g. https://github.com/BK202503/bk-spring-saga/commit/07ef844f7dfab2a200064554f9bfe4c879e4879b
+still returns HTTP 200) and should be purged from storage.
 
 ## What I'd like
 
