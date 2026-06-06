@@ -102,6 +102,45 @@ covered by PR #1702 — moved on.
 where the maintainer is still in "wait and see" mode. Engaged via comment
 rather than burning a first-PR slot on a feature that may not be accepted.
 
+## 2026-06-06 — Two more Spring upstream PRs
+
+### Spring Kafka #4469 — review iteration
+
+`@artembilan` (Spring Kafka maintainer) flagged the `Thread.sleep(2_000)` in
+the bounded-retry regression test as suspicious — "isn't the latch enough?".
+The latch wasn't enough (`CountDownLatch(1)` only catches the *first*
+recovery; under the bug the cycle keeps repeating), so the actual signal is
+the delivery counter holding steady at 3.
+
+Switched the test to Awaitility's `pollDelay + atMost + untilAsserted`
+pattern, which expresses "count must reach 3 and stay at 3" without a bare
+sleep, and posted a short reply explaining why the latch alone is
+insufficient. New commit `f60f214`, DCO re-checked green, waiting for the
+next round.
+
+### Spring AI #6317 — regression test for #5971
+
+Opened a new PR with a failing regression test that encodes the expected
+streaming observation stop order from #5971. The test uses a custom
+`ObservationHandler` on `TestObservationRegistry` to capture every
+`onStart` / `onStop` event by name, then asserts that
+`spring.ai.advisor` stops before `spring.ai.chat.client` (LIFO).
+
+Confirmed locally that on `main` the assertion fails as expected:
+`spring.ai.chat.client` is at stop index 0, `spring.ai.advisor` at index 1
+— the inverse of LIFO, exactly as #5971 reports. The test is marked
+`@Disabled` referencing the issue so CI stays green; the next contributor
+who fixes the lifecycle can simply flip the annotation off and have a
+machine-verified regression guard.
+
+The PR body also documents the second half of #5971 (`spring.ai.tool`
+observations getting a null parent in streaming) and points at the
+suspected boundary: `Schedulers.boundedElastic()` inside
+`ToolCallingAdvisor.handleToolCallRecursion` where
+`ToolCallReactiveContextHolder` is read.
+
+Branch: `BK202503/spring-ai:GH-5971-regression-test`. DCO green.
+
 ## 2026-06-03 — Email privacy cleanup
 
 DCO bot on #1714 surfaced that every commit on every fork carried the
